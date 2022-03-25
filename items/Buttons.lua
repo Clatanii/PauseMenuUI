@@ -1,8 +1,6 @@
 PauseMenuUI.Internal.Data.Buttons = {['0'] = {}, ['3'] = {}}
 PauseMenuUI.Internal.Data.ButtonRegister = {['0'] = 0, ['3'] = 0}
 PauseMenuUI.Internal.Data.RegisteredButtons = 0
-PauseMenuUI.Internal.Data.BlockedButtonColumns = {}
-PauseMenuUI.Internal.Data.IsInputBlocked = false
 
 local AddToPool = function(Column)
     for index, column in ipairs(PauseMenuUI.Internal.Data.ColumnPool) do
@@ -14,11 +12,7 @@ local AddToPool = function(Column)
     table.insert(PauseMenuUI.Internal.Data.ColumnPool, Column)
 end
 
-PauseMenuUI.Internal.BlockButtonColumn = function(Column, Bool)
-    PauseMenuUI.Internal.Data.BlockedButtonColumns[Column] = Bool
-end
-
-PauseMenuUI.AddButton = function(MenuID, Column, Text, Desc, Style, cb)
+PauseMenuUI.AddButton = function(Column, Text, Desc, Style, cb)
 
     -- get 'button_id'
     local button_id = PauseMenuUI.Internal.Data.ButtonRegister[tostring(Column)]

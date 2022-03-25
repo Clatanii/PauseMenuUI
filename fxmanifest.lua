@@ -4,7 +4,6 @@ games { 'gta5' };
 client_scripts {
     'PauseMenuUI.lua',
     'Render.lua',
-    'Buttons.lua',
-    'Details.lua',
+    'items/*.lua',
     'test.lua',
 }

@@ -1,4 +1,5 @@
 PauseMenuUI.Internal.Data.LoadedButtons = 0
+PauseMenuUI.Internal.Data.ForceFlush = false
 
 PauseMenuUI.Internal.Init = function(Header)
     BeginScaleformMovieMethodOnFrontendHeader('SHIFT_CORONA_DESC')
@@ -15,7 +16,7 @@ PauseMenuUI.Internal.Init = function(Header)
     EndScaleformMovieMethod()
     Wait(10)
 
-    BeginScaleformMovieMethodOnFrontendHeader('SHOW_HEADINGDetails') --disables right side player mockshot and cash / bank
+    BeginScaleformMovieMethodOnFrontendHeader('SHOW_HEADINGPauseMenuUI.Internal.Data.TextBox') --disables right side player mockshot and cash / bank
     ScaleformMovieMethodAddParamBool(Header.ShowPlayerCard) --toggle
     EndScaleformMovieMethod()
     Wait(10)
@@ -83,10 +84,10 @@ end
 PauseMenuUI.Internal.RenderDetails = function()
     local Details = PauseMenuUI.Internal.Data.Details
 
-    if Details.Type then
+    if Details.LeftSideText and not PauseMenuUI.Internal.IsColumnBlocked(2) then
         BeginScaleformMovieMethodOnFrontend('SET_COLUMN_TITLE')
-        ScaleformMovieMethodAddParamInt(Details.Type) --// some sort of type. Using 1 lets you create Title card.
-        ScaleformMovieMethodAddParamTextureNameString(Details.Header) --when 'type is 2', this is a column header.
+        ScaleformMovieMethodAddParamInt(1) --// some sort of type. Using 1 lets you create Title card.
+        ScaleformMovieMethodAddParamTextureNameString('') --when 'type is 2', this is a column header.
         ScaleformMovieMethodAddParamTextureNameString(Details.LeftSideText) --when 'type is 2', this is a left side text. If it's 1, then it's the title
         ScaleformMovieMethodAddParamTextureNameString(Details.RightSideText) --when 'type is 2', this is right text.
         ScaleformMovieMethodAddParamTextureNameString(Details.TextureDir or '') --TextureDirectory for column img
@@ -98,14 +99,15 @@ PauseMenuUI.Internal.RenderDetails = function()
         ScaleformMovieMethodAddParamTextureNameString(Details.AP or 0) --Ap value
         EndScaleformMovieMethod()
 
-        if type(Details.Warning) == 'table' then
+        -- Wonder how the fuck you remove this after it has been rendered once?
+        --[[ if type(Details.Warning) == 'table' then
             BeginScaleformMovieMethodOnFrontend('SET_COLUMN_TITLE')
-            ScaleformMovieMethodAddParamInt(Details.Warning.Type) --// some sort of type. Using 1 lets you create Title card. type 2 = warning/alert/error tile below the column.
+            ScaleformMovieMethodAddParamInt(2) --// some sort of type. Using 1 lets you create Title card. type 2 = warning/alert/error tile below the column.
             ScaleformMovieMethodAddParamTextureNameString(Details.Warning.Header) --when 'type is 2', this is a column header.
             ScaleformMovieMethodAddParamTextureNameString(Details.Warning.LeftSideText) --when 'type is 2', this is a left side text. If it's 1, then it's the title
             ScaleformMovieMethodAddParamTextureNameString(Details.Warning.RightSideText) --when 'type is 2', this is right text.
             EndScaleformMovieMethod()
-        end
+        end ]]
 
         if type(Details.Rows) == 'table' then
             for index, item in pairs(Details.Rows) do
@@ -123,36 +125,54 @@ PauseMenuUI.Internal.RenderDetails = function()
             end
         end
 
-        BeginScaleformMovieMethodOnFrontend("DISPLAY_DATA_SLOT")
+        BeginScaleformMovieMethodOnFrontend('DISPLAY_DATA_SLOT')
         ScaleformMovieMethodAddParamInt(1)
         EndScaleformMovieMethod()
     else
-        BeginScaleformMovieMethodOnFrontend('SHOW_COLUMN')
-        ScaleformMovieMethodAddParamInt(1)
-        EndScaleformMovieMethod()
-
-        BeginScaleformMovieMethodOnFrontend('SHOW_WARNING_MESSAGE')
+        BeginScaleformMovieMethodOnFrontend('SET_DATA_SLOT_EMPTY')
         ScaleformMovieMethodAddParamInt(1)
         EndScaleformMovieMethod()
     end
 end
 
-PauseMenuUI.Internal.SetMenuFocus = function(Data)
-    PauseMenuUI.Internal.Data.CurrentMenuFocus = Data
+PauseMenuUI.Internal.RenderTextBox = function()
+    local TextBox = PauseMenuUI.Internal.Data.TextBox
 
-    BeginScaleformMovieMethodOnFrontend('SET_COLUMN_FOCUS')
-    ScaleformMovieMethodAddParamInt(Data) --// column index // _loc7_
-    ScaleformMovieMethodAddParamInt(1)-- // highlightIndex // _loc6_
-    ScaleformMovieMethodAddParamInt(1) --// scriptSetUniqID // _loc4_
-    ScaleformMovieMethodAddParamInt(0) --// scriptSetMenuState // _loc5_
-    EndScaleformMovieMethod()
+    if TextBox.Column == nil then
+        PauseMenuUI.Internal.Data.BlockedColumn = {}
+
+        BeginScaleformMovieMethodOnFrontend('SHOW_WARNING_MESSAGE')
+        ScaleformMovieMethodAddParamInt(0)
+        EndScaleformMovieMethod()
+    else
+        if TextBox.Column ~= 0 and TextBox.Column < 4 then
+            BeginScaleformMovieMethodOnFrontend('SHOW_WARNING_MESSAGE')
+            ScaleformMovieMethodAddParamInt(1) --showToggle
+            if TextBox.Column < 3 then
+                ScaleformMovieMethodAddParamInt(TextBox.Column) --column from where to start.
+                ScaleformMovieMethodAddParamInt(1) --columns to cover.
+            elseif TextBox.Column == 3 then
+                ScaleformMovieMethodAddParamInt(1) --column from where to start.
+                ScaleformMovieMethodAddParamInt(2) --columns to cover.
+            end
+            ScaleformMovieMethodAddParamTextureNameString(TextBox.Text) --body String.
+            ScaleformMovieMethodAddParamTextureNameString(TextBox.Title) --title String.
+            ScaleformMovieMethodAddParamInt(0) --background height?
+            ScaleformMovieMethodAddParamTextureNameString(TextBox.TextureDic or '') --textureDictionary
+            ScaleformMovieMethodAddParamTextureNameString(TextBox.TextureName or '') --textureName
+            ScaleformMovieMethodAddParamInt(0) --image Alignment. (Probably justify. 0 = left)
+            ScaleformMovieMethodAddParamTextureNameString(TextBox.Footer) --footer String.
+            ScaleformMovieMethodAddParamInt(0) --request background texture.
+            EndScaleformMovieMethod()
+        end
+    end
 end
 
-PauseMenuUI.Internal.RenderHandle = function()
+PauseMenuUI.Internal.RenderButtons = function()
     
     -- Render buttons
     for index, column in ipairs(PauseMenuUI.Internal.Data.ColumnPool) do
-        if not PauseMenuUI.Internal.Data.BlockedButtonColumns[tostring(column)] then
+        if not PauseMenuUI.Internal.IsColumnBlocked(column) then
             BeginScaleformMovieMethodOnFrontend('SET_DATA_SLOT_EMPTY')
             ScaleformMovieMethodAddParamInt(column) -- column I guess?
             EndScaleformMovieMethod()
@@ -204,15 +224,21 @@ PauseMenuUI.Internal.RenderHandle = function()
 
                 PauseMenuUI.Internal.Data.LoadedButtons = PauseMenuUI.Internal.Data.LoadedButtons + 1
             end
-            Citizen.Wait(10)
+
             BeginScaleformMovieMethodOnFrontend('DISPLAY_DATA_SLOT')
+            ScaleformMovieMethodAddParamInt(column)
+            EndScaleformMovieMethod()
+        else
+            PauseMenuUI.Internal.Data.LoadedButtons = PauseMenuUI.Internal.Data.LoadedButtons + 1
+
+            BeginScaleformMovieMethodOnFrontend('SET_DATA_SLOT_EMPTY')
             ScaleformMovieMethodAddParamInt(column)
             EndScaleformMovieMethod()
         end
     end
 
     -- set focus
-    PauseMenuUI.Internal.SetMenuFocus(PauseMenuUI.Internal.Data.CurrentMenuFocus)
+    PauseMenuUI.SetMenuFocus(PauseMenuUI.Internal.Data.CurrentMenuFocus)
 end
 
 PauseMenuUI.Internal.RenderToolTip = function(Text, Symbol)

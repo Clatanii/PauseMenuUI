@@ -1,11 +1,28 @@
 -- Main table for "PauseMenuUI" data and functions.
 PauseMenuUI = {
     Menus = {}, -- menu cache, so we can have more than one menu :p
-    Internal = {Data = {MenuReady = false, CurrentMenuFocus = 0, ColumnPool = {}}} -- Internal code that SHOULD be kept to local script use ONLY
+    Internal = {Data = {BlockedColumn = {}, MenuReady = false, CurrentMenuFocus = 0, ColumnPool = {}}} -- Internal code that SHOULD be kept to local script use ONLY
 }
 
 PauseMenuUI.Internal.PlaySound = function(Audio)
     PlaySoundFrontend(-1, Audio, 'HUD_FRONTEND_DEFAULT_SOUNDSET', 1)
+end
+
+PauseMenuUI.Internal.IsColumnBlocked = function(Column)
+    return PauseMenuUI.Internal.Data.BlockedColumn[tostring(Column)] or false
+end
+
+PauseMenuUI.SetMenuFocus = function(Data)
+    if not PauseMenuUI.Internal.IsColumnBlocked(Data) then
+        PauseMenuUI.Internal.Data.CurrentMenuFocus = Data
+
+        BeginScaleformMovieMethodOnFrontend('SET_COLUMN_FOCUS')
+        ScaleformMovieMethodAddParamInt(Data) --// column index // _loc7_
+        ScaleformMovieMethodAddParamInt(1)-- // highlightIndex // _loc6_
+        ScaleformMovieMethodAddParamInt(1) --// scriptSetUniqID // _loc4_
+        ScaleformMovieMethodAddParamInt(0) --// scriptSetMenuState // _loc5_
+        EndScaleformMovieMethod()
+    end
 end
 
 PauseMenuUI.Open = function(MenuID)
@@ -53,8 +70,10 @@ PauseMenuUI.Handle = function(MenuID, cb)
                 cb()
 
                 -- Handle buttons in real-time
-                if (PauseMenuUI.Internal.Data.LoadedButtons or 0) < PauseMenuUI.Internal.Data.RegisteredButtons then
-                    PauseMenuUI.Internal.RenderHandle()
+                if (PauseMenuUI.Internal.Data.LoadedButtons or 0) < PauseMenuUI.Internal.Data.RegisteredButtons or PauseMenuUI.Internal.Data.ForceFlush then
+                    PauseMenuUI.Internal.RenderButtons()
+
+                    PauseMenuUI.Internal.Data.ForceFlush = false
                 elseif (PauseMenuUI.Internal.Data.LoadedButtons or 0) > PauseMenuUI.Internal.Data.RegisteredButtons then
                     PauseMenuUI.Internal.Data.Buttons = {['0'] = {}, ['3'] = {}}
                     PauseMenuUI.Internal.Data.LoadedButtons = 0
@@ -67,6 +86,11 @@ PauseMenuUI.Handle = function(MenuID, cb)
                 PauseMenuUI.Internal.RenderDetails()
 
                 PauseMenuUI.Internal.Data.Details = {}
+
+                -- Handle textbox page(s)
+                PauseMenuUI.Internal.RenderTextBox()
+
+                PauseMenuUI.Internal.Data.TextBox = {}
             end
         end
     end)
