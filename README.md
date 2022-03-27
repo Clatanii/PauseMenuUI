@@ -31,7 +31,7 @@ RegisterCommand('close_menu', function()
     PauseMenuUI.Close(MenuID)
     
     -- This would work as well, but would close ANY opened menu
-    PauseMenuUI.CloseAny()
+    -- PauseMenuUI.CloseAny()
 end)
 
 -- This is the loop/handler for the menu, SHOULD always be run in this function as this is were the render handle is aswell
