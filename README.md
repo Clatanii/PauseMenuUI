@@ -1,7 +1,10 @@
-# PauseMenuUI
+# ✨ PauseMenuUI
 A framework built around "real-time" PauseMenu rendering.
 
-# Use Of Framework
+# 🖋️ License
+You are *not* allowed to sell this framework without the correct permissions from me (Clatanii#5199).
+
+# 🔬 Use Of Framework
 This framework is still in W.I.P but at the moment it is quite usable anyway.
 
 ## Setting up a menu
