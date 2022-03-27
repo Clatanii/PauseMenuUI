@@ -10,6 +10,10 @@ RegisterCommand('open_menu', function()
     PauseMenuUI.Open(MenuID)
 end)
 
+RegisterCommand('close_menu', function()
+    PauseMenuUI.Close(MenuID)
+end)
+
 PauseMenuUI.Handle(MenuID, function()
     PauseMenuUI.AddButton(3, 'Change menu', 'hola senorita', {RightText = '~c~Some text! :)'}, function(Hover, Selected)
         if Selected then
