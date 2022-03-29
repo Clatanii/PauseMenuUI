@@ -16,7 +16,7 @@ PauseMenuUI.Internal.Init = function(Header)
     EndScaleformMovieMethod()
     Wait(10)
 
-    BeginScaleformMovieMethodOnFrontendHeader('SHOW_HEADINGPauseMenuUI.Internal.Data.TextBox') --disables right side player mockshot and cash / bank
+    BeginScaleformMovieMethodOnFrontendHeader('SHOW_HEADING') --disables right side player mockshot and cash / bank
     ScaleformMovieMethodAddParamBool(Header.ShowPlayerCard) --toggle
     EndScaleformMovieMethod()
     Wait(10)
