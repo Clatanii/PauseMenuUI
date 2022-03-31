@@ -1,6 +1,7 @@
 PauseMenuUI.Internal.Data.Buttons = {['0'] = {}, ['3'] = {}}
 PauseMenuUI.Internal.Data.ButtonRegister = {['0'] = 0, ['3'] = 0}
 PauseMenuUI.Internal.Data.RegisteredButtons = 0
+PauseMenuUI.Internal.Data.LastButton = -1
 
 local AddToPool = function(Column)
     for index, column in ipairs(PauseMenuUI.Internal.Data.ColumnPool) do
@@ -36,10 +37,17 @@ PauseMenuUI.AddButton = function(Column, Text, Desc, Style, cb)
     -- user control handle
     local Hover = false
     local Selected = false
+    local Active = false
     local _, ButtonPointer = GetPauseMenuSelection()
 
     if Column == PauseMenuUI.Internal.Data.CurrentMenuFocus and PauseMenuUI.Internal.Data.Buttons[tostring(Column)][tostring(button_id)].ButtonID == ButtonPointer then
         Hover = true
+
+        if PauseMenuUI.Internal.Data.LastButton ~= ButtonPointer then
+            Active = true
+        end
+
+        PauseMenuUI.Internal.Data.LastButton = ButtonPointer
 
         PauseMenuUI.Internal.RenderToolTip(Desc, Style.DescSymbol)
     end
@@ -51,7 +59,7 @@ PauseMenuUI.AddButton = function(Column, Text, Desc, Style, cb)
         Wait(1)
     end
 
-    cb(Hover, Selected)
+    if type(cb) == 'function' then cb(Hover, Selected, Active) end
 
     return button_id
 end

@@ -90,7 +90,7 @@ PauseMenuUI.Handle(MenuID, function()
 
     -- handle details page if enabled
     if details_show then
-        PauseMenuUI.Details('Some header...', 'right side', '', '', {Header = 'Important Message', LeftSideText = 'Fuck russia', RightSideText = '<3 Ukraine'}, details_page)
+        PauseMenuUI.Details('Some text', '', '', {Header = 'Important Message', LeftSideText = 'Fuck russia', RightSideText = '<3 Ukraine'}, details_page)
     end
 
     -- handle textbox page if enabled.

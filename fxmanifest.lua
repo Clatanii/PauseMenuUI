@@ -5,5 +5,5 @@ client_scripts {
     'PauseMenuUI.lua',
     'Render.lua',
     'items/*.lua',
-    'test.lua',
+    'example.lua',
 }

@@ -14,6 +14,7 @@ end
 
 PauseMenuUI.SetMenuFocus = function(Data)
     if not PauseMenuUI.Internal.IsColumnBlocked(Data) then
+        PauseMenuUI.Internal.Data.ForceFlush = true -- just flush the buttons incase of left-over buttons get left somehow
         PauseMenuUI.Internal.Data.CurrentMenuFocus = Data
 
         BeginScaleformMovieMethodOnFrontend('SET_COLUMN_FOCUS')
@@ -25,8 +26,12 @@ PauseMenuUI.SetMenuFocus = function(Data)
     end
 end
 
-PauseMenuUI.CloseAny = function(MenuID)
+PauseMenuUI.CloseAny = function()
     PauseMenuUI.Internal.CloseMenu()
+end
+
+PauseMenuUI.IsAnyMenuOpen = function()
+    return PauseMenuUI.Internal.Data.CurrentMenu or false
 end
 
 PauseMenuUI.Close = function(MenuID)
@@ -97,11 +102,18 @@ PauseMenuUI.Handle = function(MenuID, cb)
     CreateThread(function()
         while true do Wait(1)
             if PauseMenuUI.Internal.Data.CurrentMenu == MenuID and PauseMenuUI.Internal.Data.MenuReady then
+
                 cb()
 
                 -- Handle buttons in real-time
                 if (PauseMenuUI.Internal.Data.LoadedButtons or 0) < PauseMenuUI.Internal.Data.RegisteredButtons or PauseMenuUI.Internal.Data.ForceFlush then
+                    
                     PauseMenuUI.Internal.RenderButtons()
+
+                    if PauseMenuUI.Internal.Data.ForceFlush then
+                        PauseMenuUI.Internal.Data.Buttons = {['0'] = {}, ['3'] = {}}
+                        PauseMenuUI.Internal.Data.LoadedButtons = 0
+                    end
 
                     PauseMenuUI.Internal.Data.ForceFlush = false
                 elseif (PauseMenuUI.Internal.Data.LoadedButtons or 0) > PauseMenuUI.Internal.Data.RegisteredButtons then

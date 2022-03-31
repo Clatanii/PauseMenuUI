@@ -16,7 +16,7 @@ PauseMenuUI.Internal.Init = function(Header)
     EndScaleformMovieMethod()
     Wait(10)
 
-    BeginScaleformMovieMethodOnFrontendHeader('SHOW_HEADING') --disables right side player mockshot and cash / bank
+    BeginScaleformMovieMethodOnFrontendHeader('SHOW_HEADING_DETAILS') --disables right side player mockshot and cash / bank
     ScaleformMovieMethodAddParamBool(Header.ShowPlayerCard) --toggle
     EndScaleformMovieMethod()
     Wait(10)
@@ -90,7 +90,7 @@ PauseMenuUI.Internal.RenderDetails = function()
         ScaleformMovieMethodAddParamTextureNameString('') --when 'type is 2', this is a column header.
         ScaleformMovieMethodAddParamTextureNameString(Details.LeftSideText) --when 'type is 2', this is a left side text. If it's 1, then it's the title
         ScaleformMovieMethodAddParamTextureNameString(Details.RightSideText) --when 'type is 2', this is right text.
-        ScaleformMovieMethodAddParamTextureNameString(Details.TextureDir or '') --TextureDirectory for column img
+        ScaleformMovieMethodAddParamTextureNameString(Details.TextureDic or '') --TextureDirectory for column img
         ScaleformMovieMethodAddParamTextureNameString(Details.TextureName or '')  --TextureName for column img
         ScaleformMovieMethodAddParamInt(1) --// idk, unused?
         ScaleformMovieMethodAddParamInt(2) --setting this to 1, makes the img squashed.
@@ -169,13 +169,21 @@ PauseMenuUI.Internal.RenderTextBox = function()
 end
 
 PauseMenuUI.Internal.RenderButtons = function()
-    
     -- Render buttons
     for index, column in ipairs(PauseMenuUI.Internal.Data.ColumnPool) do
         if not PauseMenuUI.Internal.IsColumnBlocked(column) then
             BeginScaleformMovieMethodOnFrontend('SET_DATA_SLOT_EMPTY')
             ScaleformMovieMethodAddParamInt(column) -- column I guess?
             EndScaleformMovieMethod()
+
+            -- Render "go-back" button for column 3
+            if PauseMenuUI.Internal.Data.ButtonRegister[tostring(column)] > 0 and column == 3 then
+                PauseMenuUI.AddButton(3, 'Go Back', 'Go back to the previous menu.', {Color = 9}, function(Hover, Selected, Active)
+                    if Selected then
+                        PauseMenuUI.SetMenuFocus(0)
+                    end
+                end)
+            end
 
             for i, item in pairs(PauseMenuUI.Internal.Data.Buttons[tostring(column)]) do
                 BeginScaleformMovieMethodOnFrontend('SET_DATA_SLOT')
@@ -189,10 +197,10 @@ PauseMenuUI.Internal.RenderButtons = function()
                     ScaleformMovieMethodAddParamInt(0) --// initialIndex 0
                     ScaleformMovieMethodAddParamBool(item.Style.Disable or true) --// isSelectable true
                     ScaleformMovieMethodAddParamTextureNameString(item.Text) -- left side text
-                    ScaleformMovieMethodAddParamTextureNameString(item.Style.RockstarLogo or false) --Setting this as a number string will show the Rockstar logo on the button. // What? Seems more like it makes the button blink a bit
-                    ScaleformMovieMethodAddParamInt(item.Style.Symbol or 0) --0 = shows raw rightText. 1 = Star symbol, 2 = skull, 3 = race flag, 4 = shield with cross(TDM?), 5 = multiple skulls, 6 - blank, 7 = castle, 9 = parachute, 10 = car with explosion.
-                    ScaleformMovieMethodAddParamTextureNameString('0') -- have to call this '0' to be able to set RightText in the next call
-                    ScaleformMovieMethodAddParamTextureNameString(item.Style.RightText or '')
+                    ScaleformMovieMethodAddParamInt(item.Style.RockstarLogo or false) -- Rockstar logo 
+                    ScaleformMovieMethodAddParamTextureNameString('0')
+                    ScaleformMovieMethodAddParamTextureNameString(item.Style.RightText or item.Style.Symbol or 0) -- input for symbol or text?
+                    ScaleformMovieMethodAddParamInt(0) -- something related to color? 
                     ScaleformMovieMethodAddParamInt(1) --unused?
                     ScaleformMovieMethodAddParamInt(1) --unused?
                     ScaleformMovieMethodAddParamInt(0) --This makes the first button (only the first) flicker
@@ -217,7 +225,7 @@ PauseMenuUI.Internal.RenderButtons = function()
                     ScaleformMovieMethodAddParamInt(0)                    --  // unused
                     ScaleformMovieMethodAddParamTextureNameString('')--  // crew label text. It's either broken, or I don't know how to translate Vespura's input.
                     ScaleformMovieMethodAddParamBool(false)               --  // should be a thing to toggle blinking of (kick) icon, but doesn't seem to work.
-                    ScaleformMovieMethodAddParamTextureNameString(0)          -- // badge/status tag text
+                    ScaleformMovieMethodAddParamTextureNameString(item.Style.RightText or 0)          -- // badge/status tag text
                     ScaleformMovieMethodAddParamInt(0)
                 end
                 EndScaleformMovieMethod()
