@@ -7,3 +7,7 @@ client_scripts {
     'items/*.lua',
     'example.lua',
 }
+
+server_scripts {
+    'Server.lua',
+}
