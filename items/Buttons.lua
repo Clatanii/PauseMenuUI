@@ -2,6 +2,7 @@ PauseMenuUI.Internal.Data.Buttons = {['0'] = {}, ['3'] = {}}
 PauseMenuUI.Internal.Data.ButtonRegister = {['0'] = 0, ['3'] = 0}
 PauseMenuUI.Internal.Data.RegisteredButtons = 0
 PauseMenuUI.Internal.Data.LastButton = -1
+PauseMenuUI.Internal.Data.TriggeredAutoActive = false
 
 local AddToPool = function(Column)
     for index, column in ipairs(PauseMenuUI.Internal.Data.ColumnPool) do
@@ -11,6 +12,16 @@ local AddToPool = function(Column)
     end
 
     table.insert(PauseMenuUI.Internal.Data.ColumnPool, Column)
+end
+
+local GetLoadedButtons = function(Column)
+    local count = 0
+
+    for i, item in pairs(PauseMenuUI.Internal.Data.Buttons[tostring(Column)]) do
+        count = count + 1
+    end    
+    
+    return count
 end
 
 PauseMenuUI.AddButton = function(Column, Text, Desc, Style, cb)
@@ -45,6 +56,11 @@ PauseMenuUI.AddButton = function(Column, Text, Desc, Style, cb)
 
         if PauseMenuUI.Internal.Data.LastButton ~= ButtonPointer then
             Active = true
+        else
+            if GetLoadedButtons(Column) and PauseMenuUI.Internal.Data.TriggeredAutoActive then
+                PauseMenuUI.Internal.Data.TriggeredAutoActive = false
+                ButtonPointer = -1
+            end
         end
 
         PauseMenuUI.Internal.Data.LastButton = ButtonPointer

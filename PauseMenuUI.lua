@@ -1,7 +1,7 @@
 -- Main table for "PauseMenuUI" data and functions.
 PauseMenuUI = {
     Menus = {}, -- menu cache, so we can have more than one menu :p
-    Internal = {Data = {CurrentMenu = nil, BlockedColumn = {}, MenuReady = false, CurrentMenuFocus = 0, ColumnPool = {}}} -- Internal code that SHOULD be kept to local script use ONLY
+    Internal = {Data = {BlockedMenus = {}, CurrentMenu = nil, MenuReady = false, CurrentMenuFocus = 0, ColumnPool = {}}} -- Internal code that SHOULD be kept to local script use ONLY
 }
 
 PauseMenuUI.Internal.PlaySound = function(Audio)
@@ -9,7 +9,13 @@ PauseMenuUI.Internal.PlaySound = function(Audio)
 end
 
 PauseMenuUI.Internal.IsColumnBlocked = function(Column)
-    return PauseMenuUI.Internal.Data.BlockedColumn[tostring(Column)] or false
+    return PauseMenuUI.Internal.Data.BlockedMenus[tostring(Column)] or false
+end
+
+PauseMenuUI.BlockMenu = function(...)
+    for i, var in ipairs({...}) do
+        PauseMenuUI.Internal.Data.BlockedMenus[var] = true
+    end
 end
 
 PauseMenuUI.SetMenuFocus = function(Data)
@@ -64,6 +70,7 @@ PauseMenuUI.Open = function(MenuID)
 
         PauseMenuUI.Internal.Data.RegisteredButtons = 0
         PauseMenuUI.Internal.Data.LoadedButtons = 0
+        PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus = 0
 
         TriggerScreenblurFadeIn(1000)
         ActivateFrontendMenu('FE_MENU_VERSION_CORONA', false, -1)
@@ -80,7 +87,7 @@ PauseMenuUI.Open = function(MenuID)
 end
 
 -- Create a menu, this is the "root" of the menu, MenuID is required to be a string.
-PauseMenuUI.CreateMenu = function(MenuID, Title, Subtitle, MenuHeader, ListHeader, DetailHeader)
+PauseMenuUI.CreateMenu = function(MenuID, Title, Subtitle, MenuHeader, ListHeader, DetailHeader, CanMenuBeIndexed, CanMenuBeManuallyClosed)
     assert(PauseMenuUI.Menus[MenuID] == nil, 'A menu with ID '..MenuID..' is already existing.')
     assert(type(MenuID) == 'string', '"MenuID" is required to be a string.')
     
@@ -91,6 +98,8 @@ PauseMenuUI.CreateMenu = function(MenuID, Title, Subtitle, MenuHeader, ListHeade
             MenuHeader = MenuHeader,
             ListHeader = ListHeader,
             DetailHeader = DetailHeader,
+            AllowHeadIndex = CanMenuBeIndexed or false,
+            CanMenuBeManuallyClosed = CanMenuBeManuallyClosed or false,
         },
     }
 
@@ -103,7 +112,7 @@ PauseMenuUI.Handle = function(MenuID, cb)
         while true do Wait(1)
             if PauseMenuUI.Internal.Data.CurrentMenu == MenuID and PauseMenuUI.Internal.Data.MenuReady then
 
-                cb()
+                cb(PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus)
 
                 -- Handle buttons in real-time
                 if (PauseMenuUI.Internal.Data.LoadedButtons or 0) < PauseMenuUI.Internal.Data.RegisteredButtons or PauseMenuUI.Internal.Data.ForceFlush then
@@ -133,6 +142,21 @@ PauseMenuUI.Handle = function(MenuID, cb)
                 PauseMenuUI.Internal.RenderTextBox()
 
                 PauseMenuUI.Internal.Data.TextBox = {}
+
+                -- Handle locked menu indexes
+                PauseMenuUI.Internal.RenderLockedMenus()
+
+                PauseMenuUI.Internal.Data.BlockedMenus = {}
+
+                -- Handle focus for top-header-menu
+                if PauseMenuUI.Menus[MenuID].Header.AllowHeadIndex then
+                    PauseMenuUI.Internal.HandleHeaderMenuFocus()
+                end
+
+                -- If menu can be manually closed then can close with "ESC".
+                PauseMenuUI.Menus[MenuID].Header.CanMenuBeManuallyClosed then
+                    PauseMenuUI.Internal.HandleManuallyClose()
+                end
             end
         end
     end)

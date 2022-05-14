@@ -1,5 +1,48 @@
 PauseMenuUI.Internal.Data.LoadedButtons = 0
 PauseMenuUI.Internal.Data.ForceFlush = false
+PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus = 0
+
+PauseMenuUI.Internal.HandleManuallyClose = function()
+    if IsDisabledControlJustReleased(0, 200) then
+        PauseMenuUI.Internal.CloseMenu()
+    end
+end
+
+PauseMenuUI.Internal.HandleHeaderMenuFocus = function()
+    BeginScaleformMovieMethodOnFrontendHeader('HIGHLIGHT_MENU')
+    ScaleformMovieMethodAddParamInt(PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus)
+    EndScaleformMovieMethodReturnValue()
+
+    if IsDisabledControlJustPressed(0, 153) then -- Right / E
+        if PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus + 1 ~= 3 then
+            PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus = PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus + 1
+            PauseMenuUI.Internal.PlaySound('SELECT')
+            PauseMenuUI.Internal.Data.TriggeredAutoActive = true
+            PauseMenuUI.Internal.Data.ForceFlush = true
+
+            if PauseMenuUI.Internal.Data.CurrentMenuFocus ~= 0 then
+                PauseMenuUI.SetMenuFocus(0)
+            end
+
+            Wait(1)
+        end
+    end
+
+    if IsDisabledControlJustPressed(0, 152) then -- Left / Q
+        if PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus - 1 ~= -1 then
+            PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus = PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus - 1
+            PauseMenuUI.Internal.PlaySound('SELECT')
+            PauseMenuUI.Internal.Data.TriggeredAutoActive = true
+            PauseMenuUI.Internal.Data.ForceFlush = true
+
+            if PauseMenuUI.Internal.Data.CurrentMenuFocus ~= 0 then
+                PauseMenuUI.SetMenuFocus(0)
+            end
+
+            Wait(1)
+        end
+    end
+end
 
 PauseMenuUI.Internal.Init = function(Header)
     BeginScaleformMovieMethodOnFrontendHeader('SHIFT_CORONA_DESC')
@@ -60,11 +103,19 @@ PauseMenuUI.Internal.Init = function(Header)
     EndScaleformMovieMethodReturnValue()
     Wait(10)
 
-    BeginScaleformMovieMethodOnFrontendHeader('SET_ALL_HIGHLIGHTS') --Changes the column Header block color
-    ScaleformMovieMethodAddParamInt(1) --// toggle
-    ScaleformMovieMethodAddParamInt(Header.HeaderColor) --// colorID
-    EndScaleformMovieMethodReturnValue()
-    Wait(10)
+    if Header.AllowHeadIndex then
+        BeginScaleformMovieMethodOnFrontendHeader('SET_ALL_HIGHLIGHTS') --Changes the column Header block color
+        ScaleformMovieMethodAddParamInt(0) --// toggle
+        ScaleformMovieMethodAddParamInt(Header.HeaderColor) --// colorID
+        EndScaleformMovieMethodReturnValue()
+        Wait(10)
+    else
+        BeginScaleformMovieMethodOnFrontendHeader('SET_ALL_HIGHLIGHTS') --Changes the column Header block color
+        ScaleformMovieMethodAddParamInt(1) --// toggle
+        ScaleformMovieMethodAddParamInt(Header.HeaderColor) --// colorID
+        EndScaleformMovieMethodReturnValue()
+        Wait(10)
+    end
 
     BeginScaleformMovieMethodOnFrontendHeader('SET_MENU_HEADER_TEXT_BY_INDEX') --Changes the column Header text
     ScaleformMovieMethodAddParamInt(1) --// columnID. Starts at 0
@@ -119,8 +170,8 @@ PauseMenuUI.Internal.RenderDetails = function()
                 ScaleformMovieMethodAddParamInt(1) --// type 0
                 ScaleformMovieMethodAddParamInt(0) --// initialIndex 0
                 ScaleformMovieMethodAddParamBool(false) --// isSelectable true
-                ScaleformMovieMethodAddParamTextureNameString(item.LeftText)
-                ScaleformMovieMethodAddParamTextureNameString(item.RightText) --Right Text
+                ScaleformMovieMethodAddParamTextureNameString(item.LeftText or item[1])
+                ScaleformMovieMethodAddParamTextureNameString(item.RightText or item[2]) --Right Text
                 EndScaleformMovieMethod()
             end
         end
@@ -132,6 +183,28 @@ PauseMenuUI.Internal.RenderDetails = function()
         BeginScaleformMovieMethodOnFrontend('SET_DATA_SLOT_EMPTY')
         ScaleformMovieMethodAddParamInt(1)
         EndScaleformMovieMethod()
+    end
+end
+
+PauseMenuUI.Internal.RenderLockedMenus = function()
+    local free_menu_index = 0
+
+    for i, item in pairs(PauseMenuUI.Internal.Data.BlockedMenus) do
+
+        if free_menu_index == i then
+            free_menu_index = free_menu_index + 1
+        end
+
+        BeginScaleformMovieMethodOnFrontendHeader('SET_MENU_ITEM_ALERT')
+        ScaleformMovieMethodAddParamInt(i)
+        ScaleformMovieMethodAddParamTextureNameString('UNAVALIABLE')
+        ScaleformMovieMethodAddParamInt(1)
+        EndScaleformMovieMethodReturnValue()
+    end
+
+
+    if PauseMenuUI.Internal.Data.BlockedMenus[PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus] then
+        PauseMenuUI.Internal.Data.CurrentMenuHeaderFocus = free_menu_index
     end
 end
 
@@ -199,7 +272,7 @@ PauseMenuUI.Internal.RenderButtons = function()
                     ScaleformMovieMethodAddParamTextureNameString(item.Text) -- left side text
                     ScaleformMovieMethodAddParamInt(item.Style.RockstarLogo or false) -- Rockstar logo 
                     ScaleformMovieMethodAddParamTextureNameString('0')
-                    ScaleformMovieMethodAddParamTextureNameString(item.Style.RightText or item.Style.Symbol or 0) -- input for symbol or text?
+                    ScaleformMovieMethodAddParamTextureNameString(item.Style.RightText or item.Style.Symbol or '') -- input for symbol or text?
                     ScaleformMovieMethodAddParamInt(0) -- something related to color? 
                     ScaleformMovieMethodAddParamInt(1) --unused?
                     ScaleformMovieMethodAddParamInt(1) --unused?

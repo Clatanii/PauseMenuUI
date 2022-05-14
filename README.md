@@ -11,7 +11,8 @@ This framework is still in W.I.P but at the moment it is quite usable anyway.
 
 ```lua
 -- Create base menu handler
-local MenuID = PauseMenuUI.CreateMenu('menu_id_string', 'Title', 'Subtitle', 'Header1', 'Header2', 'Header3')
+local MenuID = PauseMenuUI.CreateMenu('menu_id_string', 'Title', 'Subtitle', 'Header1', 'Header2', 'Header3', false, true)
+
 -- MenuID, ShowPlayerCard, ShowHeaderStrip, HeaderColor, StripColor, BaseMenuFocus
 PauseMenuUI.SetHeaderDetails(MenuID, true, true, 2, 6, 0)
 
