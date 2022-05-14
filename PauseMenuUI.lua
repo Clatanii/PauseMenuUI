@@ -154,7 +154,7 @@ PauseMenuUI.Handle = function(MenuID, cb)
                 end
 
                 -- If menu can be manually closed then can close with "ESC".
-                PauseMenuUI.Menus[MenuID].Header.CanMenuBeManuallyClosed then
+                if PauseMenuUI.Menus[MenuID].Header.CanMenuBeManuallyClosed then
                     PauseMenuUI.Internal.HandleManuallyClose()
                 end
             end
