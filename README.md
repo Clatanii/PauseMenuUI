@@ -36,7 +36,7 @@ RegisterCommand('close_menu', function()
 end)
 
 -- This is the loop/handler for the menu, SHOULD always be run in this function as this is were the render handle is aswell
-PauseMenuUI.Handle(MenuID, function()
+PauseMenuUI.Handle(MenuID, function(HeaderID)
 
     -- Add a button, first argument is "MenuFocus" int, 0 for first row, 3 for second row.
     PauseMenuUI.AddButton(3, 'Change menu', 'hola senorita', {RightText = '~c~Some text! :)'}, function(Hover, Selected)
